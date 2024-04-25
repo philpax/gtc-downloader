@@ -46,7 +46,7 @@ class Session(BaseModel):
     participants: List[Participant]
     attributes: dict[str, str]
 
-    def fetch(auth_token: str, id: str) -> Session:
+    def fetch_from_conference(auth_token: str, id: str) -> Session:
         url = "https://events.rainfocus.com/api/session"
 
         headers = get_rainfocus_headers(auth_token)
@@ -60,23 +60,19 @@ class Session(BaseModel):
         item = json["items"][0]
         time = item["times"][0]
 
-        data = {
-            "session_id": item["sessionID"],
-            "title": item["title"],
-            "time": time["utcStartTime"],
-            "session_time_id": time["sessionTimeID"],
-            "length": item["length"],
-            "abstract": item["abstract"],
-            "participants": [
+        return Session(
+            session_id=item["sessionID"],
+            title=item["title"].strip(),
+            time=time["utcStartTime"],
+            session_time_id=time["sessionTimeID"],
+            length=item["length"],
+            abstract=item["abstract"],
+            participants=[
                 {"name": p["fullName"], "bio": p.get("globalBio")}
                 for p in item["participants"]
             ],
-            "attributes": {a["attribute"]: a["value"] for a in item["attributevalues"]},
-        }
-
-        session_model = Session(**data)
-        session_model.title = session_model.title.strip()
-        return session_model
+            attributes={a["attribute"]: a["value"] for a in item["attributevalues"]},
+        )
 
 
 class Webinar(BaseModel):
@@ -317,7 +313,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # --------------------------------------------
-    session = Session.fetch(args.rainforest_auth, args.id)
+    session = Session.fetch_from_conference(args.rainforest_auth, args.id)
     print(f"title: {session.title}")
     print(f"abstract: {session.abstract}")
     print(f"presenters: {', '.join(p.name for p in session.participants)}")
