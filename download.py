@@ -363,6 +363,11 @@ if __name__ == "__main__":
     partner_id = None
 
     if args.conf_session_id:
+        if args.rainforest_auth is None:
+            raise ValueError(
+                "Rainforest auth token is required for conference sessions"
+            )
+
         session = Session.fetch_from_conference(
             args.rainforest_auth, args.conf_session_id
         )
