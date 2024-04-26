@@ -10,6 +10,7 @@ python = "^3.10"
 pydantic = "^2.6.4"
 requests = "^2.31.0"
 tqdm = "^4.66.2"
+bs4 = "^0.0.2"
 
 [build-system]
 requires = ["poetry-core"]
